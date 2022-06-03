@@ -1,0 +1,382 @@
+---
+title: "Continua Ciberseguridad"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    storyboard: true
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(DT)
+library(plotly)
+#library(shiny)
+dataset_qradar <- read_delim("D:\\Trabajo\\dataset_qradar.csv",";", escape_double = FALSE, trim_ws = TRUE)
+
+dataset_reglas_qradar<- read_delim("D:\\Trabajo\\dataset_reglas_qradar.csv",";", escape_double = FALSE, trim_ws = TRUE)
+
+
+trips_df <- read_csv('http://s3.amazonaws.com/assets.datacamp.com/production/course_6355/datasets/sanfran_bikeshare_joined_oneday.csv')
+
+```
+
+Incidentes CiberSeguridad
+====================================================
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+
+### Alertas tempranas
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox(alertas, 
+         caption = 'Alertas tempranas', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Eventos
+
+```{r}
+eventos <- max(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox(eventos, 
+         caption = 'Eventos', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-tag',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Incidentes
+
+```{r}
+incidentes<-20
+valueBox(incidentes, 
+         caption = 'Incidentes', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-random',
+         href = '#trip-duration')
+```
+
+
+### Filtro
+```{r setup1, include=FALSE}
+#selectInput("b","Tipo de delito",choices = c("ALL",levels(factor(dataset_qradar$'Tipo de delito'))))
+#selectInput("b","Tipo de delito",choices = c("ALL",levels(factor(dataset_qradar$'Reglas'))))
+#sliderInput("duration_bin", label = "Fecha:",
+#min = 1, max = 15, value = 5, step = 1)
+
+#renderPlot({dataset_qradar %>%
+#  mutate(`Trip Duration (min)` = duration_sec / 60) %>%
+#  ggplot(aes(x = `Trip Duration (min)`)) +
+#  theme_bw() +
+#  geom_histogram(binwidth = input$duration_bin) +
+#  ylab('# Trips')
+#})
+
+```
+
+
+
+
+Column {data-width=800}
+-----------------------------------------------------------------------
+
+### Historial
+
+```{r}
+x <- c(1:12)
+y <- c(10, 20, 17, 15, 10, 5, 15, 17, 20, 10, 10, 15)
+z <- c(10, 20, 17, 13, 10, 5, 15, 17, 20, 12, 10, 14)
+
+
+data <- data.frame(x, y, z)
+
+fig <- plot_ly(data, x = ~x, y = ~y, name = "Casos reportados", type = 'scatter', mode = 'lines') %>%
+  layout( plot_bgcolor = "#e5ecf6", xaxis = list(title = 'Meses'), yaxis = list(title = 'Cantidad')) 
+fig <- fig %>% add_trace(y = ~z , name = "Casos validados", connectgaps = TRUE)
+#fig.update_layout(
+#    title="Plot Title",
+#    xaxis_title="X Axis Title",
+#    yaxis_title="Y Axis Title",
+#    legend_title="Legend Title"
+#    )
+fig
+```
+
+
+### Detalle
+
+
+```{r}
+station_trips_df <- dataset_qradar %>%
+  select(qid, 'Fecha registro','Tipo de delito','recuento de eventos', Estado, validador) 
+ #%>%
+  #gather(key = Type, value = Station) %>%
+  #group_by(Station, Type) %>%
+  #summarize(n_trips = n()) %>% 
+  #mutate(Type = ifelse(Type == 'start_station_name', 'Trip Starts', 'Trip Ends')) %>%
+  #spread(key = Type, value = n_trips) %>%
+  #replace_na(list(`Trip Starts` = 0, `Trip Ends` = 0)) %>%
+  #mutate(Gap = `Trip Ends` - `Trip Starts`)
+
+datatable(
+  station_trips_df, rownames = FALSE,
+  extensions = 'Buttons', options = list(
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  )
+)
+```
+
+
+
+Reglas
+====================================================
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+### Regla con mas eventos
+
+```{r}
+valueBox("Regla 1", 
+         caption = 'Versiones 32', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Regla con mas eventos
+
+```{r}
+valueBox("Regla 2", 
+         caption = 'Versiones 3', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Regla con mas eventos
+
+```{r}
+valueBox("Regla 5", 
+         caption = 'Versiones 12', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Regla con mas eventos
+```{r}
+valueBox("Regla 7", 
+         caption = 'Versiones 25', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Regla con mas eventos
+```{r}
+valueBox("Regla 12", 
+         caption = 'Versiones 50', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+
+Column {data-width=800}
+-----------------------------------------------------------------------
+### Detalle reglas
+
+```{r}
+station_trips_df <- dataset_reglas_qradar %>%
+  select('version regla',	'Peso (byte)',	'Fecha modificacion','usuario modificacion','version regla_1',	'Peso (byte)_1','Fecha modificacion_1','usuario modificacion_1') 
+ #%>%
+  #gather(key = Type, value = Station) %>%
+  #group_by(Station, Type) %>%
+  #summarize(n_trips = n()) %>% 
+  #mutate(Type = ifelse(Type == 'start_station_name', 'Trip Starts', 'Trip Ends')) %>%
+  #spread(key = Type, value = n_trips) %>%
+  #replace_na(list(`Trip Starts` = 0, `Trip Ends` = 0)) %>%
+  #mutate(Gap = `Trip Ends` - `Trip Starts`)
+
+datatable(
+  station_trips_df, rownames = FALSE,
+  extensions = 'Buttons', options = list(
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  )
+)
+```
+
+
+
+
+
+Preguntas de negocio
+====================================================
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+### Detalle de la data
+
+```{r}
+fig <- plot_ly(
+  x = c("Acceso no permitido", "Web denegado", "Firewall", "User Login","Error SQL", "Problemas permisos", "Cambio Privilegios"),
+  y = c(20, 14, 23,11, 30, 10, 3),
+  name = "SF Zoo",
+  type = "bar"
+)
+
+fig
+```
+
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+### Regla con mas eventos
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox("Regla 31", 
+         caption = 'Regla con mas eventos', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Alertas tempranas1
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox("127.0.0.1", 
+         caption = 'Servidor mas atacado', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Alertas tempranas1
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox("23:00", 
+         caption = 'Hora del dia con mas novedades', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Alertas tempranas1
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox("2", 
+         caption = 'inconsistencias con The Hive', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+
+-----------------------------------------------------------------------
+### Alertas tempranas1
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox("2", 
+         caption = 'Analisis de diferencias', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+### Alertas tempranas1
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox("Verificado", 
+         caption = 'Estado del proceso', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Alertas tempranas1
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox(" 10.10.11.47", 
+         caption = 'Atacante', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Alertas tempranas1
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox("Firewall", 
+         caption = 'Origen registro', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Alertas tempranas1
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox("11 M", 
+         caption = 'Magnitud estimada', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
+
+-----------------------------------------------------------------------
+### Alertas tempranas1
+
+```{r}
+
+alertas <- sum(dataset_qradar$'recuento de eventos') %>% round(digits = 1)
+valueBox("3", 
+         caption = 'Gravedad', 
+         #icon = 'fa-clock-o',
+         icon = 'fa-angle-up',
+         href = '#trip-duration')
+```
